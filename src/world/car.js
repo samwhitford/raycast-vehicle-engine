@@ -101,15 +101,14 @@ export class Car {
     }
     loadViaModelUploader() {
         const obj = this;
+        const gltfLoader = new GLTFLoader();
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderConfig({ type: 'js' })
+        dracoLoader.setDecoderPath('draco/');
+        // dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+        gltfLoader.setDRACOLoader(dracoLoader);
         const addChassisViaUpload = (e) => {
-            const gltfLoader = new GLTFLoader();
-            const dracoLoader = new DRACOLoader();
-
-            dracoLoader.setDecoderConfig({ type: 'js' })
-            dracoLoader.setDecoderPath('draco/');
-            // dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
-
-            gltfLoader.setDRACOLoader(dracoLoader);
             gltfLoader.parse( e, '', function( gltf ){
                 obj.chassisModel = gltf;
                 obj.scene.remove(obj.chassis);
@@ -120,14 +119,6 @@ export class Car {
             });
         }
         const addWheelViaUpload = (e) => {
-            const gltfLoader = new GLTFLoader();
-            const dracoLoader = new DRACOLoader();
-
-            dracoLoader.setDecoderConfig({ type: 'js' })
-            dracoLoader.setDecoderPath('draco/');
-            // dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
-
-            gltfLoader.setDRACOLoader(dracoLoader);
             for(let i = 0 ; i < 4 ; i++) {
                 gltfLoader.parse( e, '', function( gltf ){
                     obj.wheelModel = gltf;
