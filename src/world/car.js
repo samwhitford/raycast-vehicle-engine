@@ -24,6 +24,7 @@ export class Car {
         this.wheels = [];
         this.chassisDimension = {x: 1.96, y: 1, z: 4.47};
         this.chassisModelPos = {x: 0, y: -0.59, z: 0};
+        this.chassisModelScale = {x: 1, y: 1, z: 1};
         this.wheelScale = {frontWheel: 0.67, hindWheel: 0.67};
         this.controlOptions = {
             maxSteerVal: 0.5,
@@ -63,7 +64,8 @@ export class Car {
         const dracoLoader = new DRACOLoader();
 
         dracoLoader.setDecoderConfig({ type: 'js' })
-        dracoLoader.setDecoderPath('draco/');
+        // dracoLoader.setDecoderPath('draco/');
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 
         console.log(dracoLoader);
 
@@ -101,6 +103,13 @@ export class Car {
         const obj = this;
         const addChassisViaUpload = (e) => {
             const gltfLoader = new GLTFLoader();
+            const dracoLoader = new DRACOLoader();
+
+            dracoLoader.setDecoderConfig({ type: 'js' })
+            dracoLoader.setDecoderPath('draco/');
+            // dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+            gltfLoader.setDRACOLoader(dracoLoader);
             gltfLoader.parse( e, '', function( gltf ){
                 obj.chassisModel = gltf;
                 obj.scene.remove(obj.chassis);
@@ -112,6 +121,13 @@ export class Car {
         }
         const addWheelViaUpload = (e) => {
             const gltfLoader = new GLTFLoader();
+            const dracoLoader = new DRACOLoader();
+
+            dracoLoader.setDecoderConfig({ type: 'js' })
+            dracoLoader.setDecoderPath('draco/');
+            // dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+            gltfLoader.setDRACOLoader(dracoLoader);
             for(let i = 0 ; i < 4 ; i++) {
                 gltfLoader.parse( e, '', function( gltf ){
                     obj.wheelModel = gltf;
@@ -328,6 +344,9 @@ export class Car {
         this.gui.Register({folder: 'Chassis Model Position', object: this.chassisModelPos, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01,})
         this.gui.Register({folder: 'Chassis Model Position', object: this.chassisModelPos, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01,})
         this.gui.Register({folder: 'Chassis Model Position', object: this.chassisModelPos, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01,})
+        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01,})
+        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01,})
+        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01,})
 
         this.gui.Register({folder: 'Wheels', object: this.wheelScale, type: 'range', label: 'Front Wheels Scale', property: 'frontWheel', min: 0, max: 5, step: 0.01, onChange: () => {
             for(let i = 2 ; i < 4 ; i++) {
@@ -436,6 +455,11 @@ export class Car {
                     this.car.chassisBody.position.x + this.chassisModelPos.x,
                     this.car.chassisBody.position.y + this.chassisModelPos.y,
                     this.car.chassisBody.position.z + this.chassisModelPos.z
+                );
+                this.chassis.scale.set(
+                    this.chassisModelScale.x,
+                    this.chassisModelScale.y,
+                    this.chassisModelScale.z
                 );
                 this.chassis.quaternion.copy(this.car.chassisBody.quaternion);
                 this.chassis.helpChassis.position.copy(this.car.chassisBody.position);

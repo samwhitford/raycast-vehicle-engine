@@ -10,7 +10,7 @@ import cannonDebugger from 'cannon-es-debugger'
 import Guify from 'guify';
 import Stats from 'stats.js'
 
-import { Car } from './world/car.mjs'
+import { Car } from './world/car.js'
 
 const loader = document.querySelector('.loader')
 
@@ -34,6 +34,7 @@ gui.Register({folder: 'Chassis', type: 'folder', label: 'Chassis Helper', open: 
 gui.Register({folder: 'Chassis', type: 'folder', label: 'Chassis Model', open: true})
 gui.Register({folder: 'Chassis Helper', type: 'folder', label: 'Chassis Helper Dimension', open: true})
 gui.Register({folder: 'Chassis Model', type: 'folder', label: 'Chassis Model Position', open: true})
+gui.Register({folder: 'Chassis Model', type: 'folder', label: 'Chassis Model Scale', open: true})
 gui.Register({folder: 'Wheels', type: 'folder', label: 'Wheels Helper', open: true})
 gui.Register({folder: 'Wheels Helper', type: 'folder', label: 'Wheel Helper Position', open: false})
 
