@@ -456,9 +456,9 @@ export default class Car {
         gltfLoader.load("./car/chassis.gltf", gltf => {
             this.chassis = gltf.scene;
             this.chassis.scale.set(
-                this.chassisModelScale.x,
-                this.chassisModelScale.y,
-                this.chassisModelScale.z
+                this.chassisModelScale.scale,
+                this.chassisModelScale.scale,
+                this.chassisModelScale.scale
             );
             this.scene.add(this.chassis);
         })

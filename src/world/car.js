@@ -21,10 +21,12 @@ export class Car {
         this.chassis = {};
         this.chassisModel = {};
         this.wheelModel = {};
+        this.wheelPosFwd = {fwdpos: 0.3};
+        this.wheelPosSide = {sidepos: 0.2};
         this.wheels = [];
         this.chassisDimension = {x: 1.96, y: 1, z: 4.47};
         this.chassisModelPos = {x: 0, y: -0.59, z: 0};
-        this.chassisModelScale = {x: 1, y: 1, z: 1};
+        this.chassisModelScale = {scale: 1.0};
         this.wheelScale = {frontWheel: 0.67, hindWheel: 0.67};
         this.controlOptions = {
             maxSteerVal: 0.5,
@@ -77,6 +79,7 @@ export class Car {
             console.log(gltf);
             this.chassisModel = gltf;
             this.chassis = gltf.scene;
+            this.chassis.scale.set(this.chassisModelScale.scale);
             this.chassis.helpChassisGeo = new THREE.BoxGeometry(1, 1, 1);
             this.chassis.helpChassisMat = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
             this.chassis.helpChassis = new THREE.Mesh(this.chassis.helpChassisGeo, this.chassis.helpChassisMat);
@@ -114,6 +117,7 @@ export class Car {
                 obj.scene.remove(obj.chassis);
                 const temp = obj.chassis;
                 obj.chassis = gltf.scene;
+                obj.chassis.scale.set(obj.chassisModelScale.scale);
                 obj.scene.add(obj.chassis);
                 obj.chassis = {...temp, ...gltf.scene};
             });
@@ -335,10 +339,10 @@ export class Car {
         this.gui.Register({folder: 'Chassis Model Position', object: this.chassisModelPos, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01,})
         this.gui.Register({folder: 'Chassis Model Position', object: this.chassisModelPos, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01,})
         this.gui.Register({folder: 'Chassis Model Position', object: this.chassisModelPos, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01,})
-        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01,})
-        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01,})
-        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01,})
 
+        this.gui.Register({folder: 'Chassis Model Scale', object: this.chassisModelScale, type: 'range', label: 'Scale', property: 'scale', min: 0.01, max: 30, step: 0.01, onChange: () => {
+            this.chassis.scale.set(this.chassisModelScale.scale);
+        }})
         this.gui.Register({folder: 'Wheels', object: this.wheelScale, type: 'range', label: 'Front Wheels Scale', property: 'frontWheel', min: 0, max: 5, step: 0.01, onChange: () => {
             for(let i = 2 ; i < 4 ; i++) {
                 const scaleSide = i === 3 ? -1 : 1;
@@ -358,7 +362,7 @@ export class Car {
 
         }});
 
-        this.gui.Register({folder: 'Wheels Helper', object: this.car.wheelInfos[2], property: 'radius', type: 'range', label: 'Front Wheels Radius', min: 0.1, max: 5, step: 0.01, onChange: () => {
+        this.gui.Register({folder: 'Wheels Helper', object: this.car.wheelInfos[2], property: 'radius', type: 'range', label: 'Front Wheels Radius', min: 0.01, max: 5, step: 0.01, onChange: () => {
             this.car.wheelInfos[2].radius = this.car.wheelInfos[2].radius;
             this.car.wheelInfos[3].radius = this.car.wheelInfos[2].radius;
             const cylinderGeometry = new THREE.CylinderGeometry(this.car.wheelInfos[2].radius, this.car.wheelInfos[2].radius, this.car.wheelInfos[2].radius / 2, 20);
@@ -367,7 +371,7 @@ export class Car {
             this.wheels[3].helpWheels.geometry = cylinderGeometry;
         }});
 
-        this.gui.Register({folder: 'Wheels Helper', object: this.car.wheelInfos[0], property: 'radius', type: 'range', label: 'Hind Wheels Radius', min: 0.1, max: 5, step: 0.01, onChange: () => {
+        this.gui.Register({folder: 'Wheels Helper', object: this.car.wheelInfos[0], property: 'radius', type: 'range', label: 'Hind Wheels Radius', min: 0.01, max: 5, step: 0.01, onChange: () => {
             this.car.wheelInfos[0].radius = this.car.wheelInfos[0].radius;
             this.car.wheelInfos[1].radius = this.car.wheelInfos[0].radius;
             const cylinderGeometry = new THREE.CylinderGeometry(this.car.wheelInfos[0].radius, this.car.wheelInfos[0].radius, this.car.wheelInfos[0].radius / 2, 20);
@@ -376,25 +380,31 @@ export class Car {
             this.wheels[1].helpWheels.geometry = cylinderGeometry;
         }});
 
-        this.gui.Register({folder: 'Wheel Helper Position', type: 'folder', label: 'Left Front Wheel', open: true});
-        this.gui.Register({folder: 'Left Front Wheel', object: this.car.wheelInfos[2].chassisConnectionPointLocal, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Left Front Wheel', object: this.car.wheelInfos[2].chassisConnectionPointLocal, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Left Front Wheel', object: this.car.wheelInfos[2].chassisConnectionPointLocal, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01});
+        let frontLeft = 2
+        let frontRight = 1
+        let backLeft = 0
+        let backRight = 1
 
-        this.gui.Register({folder: 'Wheel Helper Position', type: 'folder', label: 'Right Front Wheel', open: true});
-        this.gui.Register({folder: 'Right Front Wheel', object: this.car.wheelInfos[3].chassisConnectionPointLocal, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Right Front Wheel', object: this.car.wheelInfos[3].chassisConnectionPointLocal, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Right Front Wheel', object: this.car.wheelInfos[3].chassisConnectionPointLocal, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01});
-
-        this.gui.Register({folder: 'Wheel Helper Position', type: 'folder', label: 'Left Hind Wheel', open: true});
-        this.gui.Register({folder: 'Left Hind Wheel', object: this.car.wheelInfos[0].chassisConnectionPointLocal, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Left Hind Wheel', object: this.car.wheelInfos[0].chassisConnectionPointLocal, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Left Hind Wheel', object: this.car.wheelInfos[0].chassisConnectionPointLocal, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01});
-
-        this.gui.Register({folder: 'Wheel Helper Position', type: 'folder', label: 'Right Hind Wheel', open: true});
-        this.gui.Register({folder: 'Right Hind Wheel', object: this.car.wheelInfos[1].chassisConnectionPointLocal, property: 'x', type: 'range', label: 'x', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Right Hind Wheel', object: this.car.wheelInfos[1].chassisConnectionPointLocal, property: 'y', type: 'range', label: 'y', min: -10, max: 10, step: 0.01});
-        this.gui.Register({folder: 'Right Hind Wheel', object: this.car.wheelInfos[1].chassisConnectionPointLocal, property: 'z', type: 'range', label: 'z', min: -10, max: 10, step: 0.01});
+        this.gui.Register({folder: 'Wheels Helper', type: 'folder', label: 'Wheels front/back distance', open: true});
+        this.gui.Register({folder: 'Wheels front/back distance', object: this.wheelPosFwd, property: 'fwdpos', type: 'range', label: 'position', min: 0, max: 5, step: 0.01, onChange: () => {
+            for (var i = 0; i < this.car.wheelInfos.length; i++) {
+                if(i == backLeft || i == backRight){
+                    this.car.wheelInfos[i].chassisConnectionPointLocal['xyz'[2]] = this.wheelPosFwd.fwdpos * -1;
+                }else{
+                    this.car.wheelInfos[i].chassisConnectionPointLocal['xyz'[2]] = this.wheelPosFwd.fwdpos * 1;
+                }
+            }
+        }});
+        this.gui.Register({folder: 'Wheels Helper', type: 'folder', label: 'Wheels side distance', open: true});
+        this.gui.Register({folder: 'Wheels side distance', object: this.wheelPosSide, property: 'sidepos', type: 'range', label: 'position', min: 0, max: 5, step: 0.01, onChange: () => {
+            for (var i = 0; i < this.car.wheelInfos.length; i++) {
+                if(i == frontLeft || i == backLeft){
+                    this.car.wheelInfos[i].chassisConnectionPointLocal['xyz'[0]] = this.wheelPosSide.sidepos * 1;
+                }else{
+                    this.car.wheelInfos[i].chassisConnectionPointLocal['xyz'[0]] = this.wheelPosSide.sidepos * -1;
+                }
+            }
+        }});
 
         this.gui.Register({folder: 'Vehicle', object: this.car.chassisBody, property: 'mass', type: 'range', label: 'Mass', min: 1, max: 1000, step: 1});
 
@@ -448,9 +458,9 @@ export class Car {
                     this.car.chassisBody.position.z + this.chassisModelPos.z
                 );
                 this.chassis.scale.set(
-                    this.chassisModelScale.x,
-                    this.chassisModelScale.y,
-                    this.chassisModelScale.z
+                    this.chassisModelScale.scale,
+                    this.chassisModelScale.scale,
+                    this.chassisModelScale.scale
                 );
                 this.chassis.quaternion.copy(this.car.chassisBody.quaternion);
                 this.chassis.helpChassis.position.copy(this.car.chassisBody.position);
